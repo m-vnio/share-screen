@@ -57,6 +57,7 @@
                 const videoElement = document.createElement('video');
                 document.querySelector("video").replaceWith(videoElement)
                 videoElement.srcObject = localStream;
+                videoElement.setAttribute("controls", "");
                 // document.body.appendChild(videoElement);
                 videoElement.play();
 
