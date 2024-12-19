@@ -1,0 +1,110 @@
+<!-- emisor.html -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emisor - Compartir Pantalla</title>
+    <link rel="stylesheet" href="./css/e.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="video">
+            <video></video>
+        </div>
+        <div class="controls">
+            <button id="start-sharing">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-svg-name="fi fi-sr-play">
+                    <path
+                        d="M20.492,7.969,10.954.975A5,5,0,0,0,3,5.005V19a4.994,4.994,0,0,0,7.954,4.03l9.538-6.994a5,5,0,0,0,0-8.062Z">
+                    </path>
+                </svg>
+            </button>
+            <button id="stop-sharing">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px"
+                    y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"
+                    data-svg-name="fi fi-sr-stop">
+                    <path
+                        d="M106.667,0h298.667C464.244,0,512,47.756,512,106.667v298.667C512,464.244,464.244,512,405.333,512H106.667  C47.756,512,0,464.244,0,405.333V106.667C0,47.756,47.756,0,106.667,0z">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script>
+        const socket = io("https://2rjn5n55-5000.brs.devtunnels.ms/");
+        const startButton = document.getElementById('start-sharing');
+        const stopButton = document.getElementById('stop-sharing');
+
+        let localStream;
+        let peerConnection;
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }, // STUN server de Google
+            ],
+        };
+
+        startButton.addEventListener('click', async () => {
+            try {
+                // Solicitar el permiso de compartir pantalla
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+
+                // Mostrar el stream local en un video (opcional)
+                const videoElement = document.createElement('video');
+                document.querySelector("video").replaceWith(videoElement)
+                videoElement.srcObject = localStream;
+                // document.body.appendChild(videoElement);
+                videoElement.play();
+
+                // Crear una nueva RTCPeerConnection
+                peerConnection = new RTCPeerConnection(configuration);
+
+                // Añadir el stream local al PeerConnection
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                // Crear una oferta (SDP)
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+
+                // Enviar la oferta al receptor a través de Socket.IO
+                socket.emit('offer', offer);
+
+                // Manejar la recepción de candidatos ICE
+                peerConnection.onicecandidate = event => {
+                    if (event.candidate) {
+                        socket.emit('candidate', event.candidate);
+                    }
+                };
+            } catch (err) {
+                console.error('Error al compartir la pantalla:', err);
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            // Detener la pista de video
+            // screenTrack.stop();
+
+            // Detener el stream completo
+            localStream?.getTracks?.().forEach(track => track.stop());
+
+            // Detener la conexión WebRTC
+            localStream?.close?.();
+        })
+
+        // Manejar la respuesta (SDP) del receptor
+        socket.on('answer', async (answer) => {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        // Manejar los candidatos ICE recibidos del receptor
+        socket.on('candidate', (candidate) => {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        });
+    </script>
+</body>
+
+</html>

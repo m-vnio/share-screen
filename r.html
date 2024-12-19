@@ -1,0 +1,63 @@
+<!-- receptor.html -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptor - Ver Pantalla</title>
+    <link rel="stylesheet" href="./css/r.css">
+</head>
+
+<body>
+    <div id="app">
+        <video id="screen-video" width="100%" controls autoplay></video>
+    </div>
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script>
+        const socket = io("https://2rjn5n55-5000.brs.devtunnels.ms/");
+        const videoElement = document.getElementById('screen-video');
+        let peerConnection;
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }, // STUN server de Google
+            ],
+        };
+
+        // Manejar la oferta (SDP) del emisor
+        socket.on('offer', async (offer) => {
+            // Crear una nueva RTCPeerConnection
+            peerConnection = new RTCPeerConnection(configuration);
+
+            // Manejar los candidatos ICE
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('candidate', event.candidate);
+                }
+            };
+
+            // Cuando se recibe el stream del emisor
+            peerConnection.ontrack = (event) => {
+                videoElement.srcObject = event.streams[0];
+            };
+
+            // Establecer la oferta como la descripción remota
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+            // Crear una respuesta (SDP)
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+
+            // Enviar la respuesta al emisor
+            socket.emit('answer', answer);
+        });
+
+        // Manejar los candidatos ICE recibidos del emisor
+        socket.on('candidate', (candidate) => {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        });
+    </script>
+</body>
+
+</html>
