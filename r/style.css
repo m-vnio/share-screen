@@ -5,6 +5,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+body {
+  color: #fff;
+  font-family: sans-serif;
+}
+
 #app {
   position: fixed;
   inset: 0;
@@ -32,5 +37,46 @@
   & video {
     width: 100%;
     height: 100%;
+  }
+}
+
+.div_DtHTBBa {
+  width: min(100%, 450px);
+  height: 60px;
+
+  display: flex;
+  border-radius: 15px;
+  align-items: center;
+
+  border: 2px solid rgb(255 255 255 / 0.3);
+  overflow: hidden;
+
+  & input {
+    all: unset;
+    font-family: inherit;
+    padding-left: 20px;
+
+    overflow: hidden;
+    flex: 1;
+    height: 100%;
+  }
+
+  a {
+    background: rgb(255 255 255 / 0.3);
+    margin: 0 10px;
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+  }
+
+  & svg {
+    width: 15px;
+    height: 15px;
+
+    fill: #fff;
   }
 }

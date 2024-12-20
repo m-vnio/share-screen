@@ -1,4 +1,8 @@
-const UUID = crypto.randomUUID();
+if (!localStorage.getItem("user-UUID")) {
+  localStorage.setItem("user-UUID", crypto.randomUUID());
+}
+
+const UUID = localStorage.getItem("user-UUID");
 const ID_APP =
   "id-app-cf63f8b2c10e10008e773a856dd6a450db17857965db51fbc3006d8d810d939b";
 const socket = io("https://l8qn2l7t-4999.brs.devtunnels.ms/");
@@ -9,9 +13,11 @@ const callbackRoom = () => {
   const $element = createNodeElement(`
     <div class="component">
 
-      <div>
-        <input type="text" placeholder="id">
-        <a href="#/" class="button" >unirse</a>
+      <div class="div_DtHTBBa">
+        <input type="text" placeholder="Codigo">
+        <a href="#/">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-svg-name="fi fi-rr-arrow-right"><path d="M23.12,9.91,19.25,6a1,1,0,0,0-1.42,0h0a1,1,0,0,0,0,1.41L21.39,11H1a1,1,0,0,0-1,1H0a1,1,0,0,0,1,1H21.45l-3.62,3.61a1,1,0,0,0,0,1.42h0a1,1,0,0,0,1.42,0l3.87-3.88A3,3,0,0,0,23.12,9.91Z"></path></svg>
+        </a>
       </div>
       
     </div>
@@ -159,6 +165,5 @@ addEventListener("hashchange", () => {
 dispatchEvent(new CustomEvent("hashchange"));
 
 socket.on("emit-data", (data) => {
-  console.log(data)
   dispatchEvent(new CustomEvent("emit-data", { detail: data }));
 });
