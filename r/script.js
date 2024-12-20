@@ -159,5 +159,6 @@ addEventListener("hashchange", () => {
 dispatchEvent(new CustomEvent("hashchange"));
 
 socket.on("emit-data", (data) => {
+  console.log(data)
   dispatchEvent(new CustomEvent("emit-data", { detail: data }));
 });
