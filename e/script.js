@@ -85,6 +85,7 @@ const callbackRoomId = () => {
 
     const $video = document.createElement("video");
     $element.querySelector("video").replaceWith($video);
+    $video.setAttribute("controls", "");
     $video.srcObject = useThis.values.localStream;
     $video.play();
 
